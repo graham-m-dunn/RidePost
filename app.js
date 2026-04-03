@@ -186,18 +186,18 @@ const DEFAULT_PROFILES = [
 // Sections with blank values will still appear — leaders should fill all fields.
 
 const BODY_TEMPLATE =
-`WCC Member Group Ride
+`**WCC Member Group Ride**
 
-Date: {{dayName}} {{dateFormatted}}
-Start Time: {{startTime}}
-Estimated Finish Time: {{finishTime}}
-Discipline: {{discipline}}
-Culture: {{cultureName}}
-Approximate Distance: {{distance}}
-Estimated Average Moving Pace: {{pace}}
-Start Location: {{location}}
+**Date**: {{dayName}} {{dateFormatted}}
+**Start Time**: {{startTime}}
+**Estimated Finish Time**: {{finishTime}}
+**Discipline**: {{discipline}}
+**Culture**: {{cultureName}}
+**Approximate Distance**: {{distance}}
+**Estimated Average Moving Pace**: {{pace}}
+**Start Location**: {{location}}
 
-Route
+**Route**
 --------
 
 {{routeUrl}}
