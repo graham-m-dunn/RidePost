@@ -779,6 +779,79 @@ function escHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── Save as Profile ─────────────────────────────────────────────────────────
+
+function openSaveAsProfile() {
+  const discipline = el('disciplineGroup').querySelector('input:checked')?.value || '';
+  const cultures   = selectedCultures();
+  const code       = cultureCode(cultures);
+  const dateVal    = el('rideDate').value;
+
+  // Pre-fill name from current discipline + culture
+  el('spName').value     = [discipline, code].filter(Boolean).join(' ');
+  el('spCategory').value = discipline;
+
+  // Summary row showing what will be saved
+  const summaryParts = [
+    discipline && `Discipline: ${discipline}`,
+    code       && `Culture: ${code}`,
+    el('startTime').value  && `Start: ${el('startTime').value}`,
+    el('finishTime').value && `Finish: ${el('finishTime').value}`,
+    el('pace').value       && `Pace: ${el('pace').value}`,
+    el('location').value   && `Location: ${el('location').value}`,
+  ].filter(Boolean);
+  el('saveProfileSummary').textContent = summaryParts.join(' · ');
+
+  // Pre-tick "lock day" if there's a date, and name the day
+  if (dateVal) {
+    const name = DAY_NAMES[parseLocalDate(dateVal).getDay()];
+    el('spLockDayLabel').textContent = `Remember ${name}s as the expected day`;
+    el('spLockDay').checked = true;
+  } else {
+    el('spLockDayLabel').textContent = 'Remember day of week from this ride';
+    el('spLockDay').checked = false;
+    el('spLockDay').disabled = true;
+  }
+
+  el('saveProfileModal').classList.remove('hidden');
+  setTimeout(() => { el('spName').select(); el('spName').focus(); }, 50);
+}
+
+function closeSaveAsProfile() {
+  el('saveProfileModal').classList.add('hidden');
+  el('spLockDay').disabled = false;
+}
+
+function commitSaveAsProfile(e) {
+  e.preventDefault();
+  const name = el('spName').value.trim();
+  if (!name) { el('spName').focus(); return; }
+
+  const discipline = el('disciplineGroup').querySelector('input:checked')?.value || '';
+  const cultures   = selectedCultures();
+  const dateVal    = el('rideDate').value;
+  const lockDay    = el('spLockDay').checked && !el('spLockDay').disabled;
+
+  const profile = {
+    id:          `profile-${Date.now()}`,
+    name,
+    category:    el('spCategory').value.trim() || discipline || 'Other',
+    discipline,
+    cultures,
+    startTime:   el('startTime').value.trim(),
+    finishTime:  el('finishTime').value.trim(),
+    pace:        el('pace').value.trim(),
+    location:    el('location').value.trim(),
+    expectedDay: (lockDay && dateVal) ? parseLocalDate(dateVal).getDay() : null,
+  };
+
+  profiles.push(profile);
+  saveProfiles();
+  renderProfileGrid();
+  closeSaveAsProfile();
+  showToast(`Profile "${name}" saved`);
+}
+
 // ─── RideWithGPS Auto-fill ───────────────────────────────────────────────────
 
 function debounce(fn, ms) {
@@ -876,6 +949,13 @@ function setupEventListeners() {
     selectedProfile = null;
     goToStep(1);
   });
+  el('saveAsProfileBtn').addEventListener('click', openSaveAsProfile);
+
+  // Save as Profile modal
+  el('closeSaveProfile').addEventListener('click', closeSaveAsProfile);
+  el('cancelSaveProfile').addEventListener('click', closeSaveAsProfile);
+  el('saveProfileModal').querySelector('.modal-backdrop').addEventListener('click', closeSaveAsProfile);
+  el('saveProfileForm').addEventListener('submit', commitSaveAsProfile);
 
   // Copy buttons
   document.querySelectorAll('.btn-copy').forEach(btn => {
@@ -922,5 +1002,6 @@ function setupEventListeners() {
     el('adminModal').classList.add('hidden');
     el('editorModal').classList.add('hidden');
     el('deleteModal').classList.add('hidden');
+    closeSaveAsProfile();
   });
 }
