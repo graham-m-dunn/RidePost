@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WCC Ride Post Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>WCC Ride Post Generator</h1>
+    <button id="adminBtn" class="btn-ghost-light">Admin</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Step indicator -->
+  <div class="steps-indicator">
+    <div class="step-dot active" data-step="1">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="2">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="3">3</div>
+  </div>
+
+  <!-- Step 1: Profile -->
+  <section id="step1" class="step-panel">
+    <h2 class="step-title">Select a Ride Profile</h2>
+    <p class="step-subtitle">Pick a profile to pre-fill the common details for this ride type.</p>
+    <div id="profileGrid" class="profile-grid"></div>
+    <div class="blank-option">
+      <button id="blankBtn" class="btn-secondary">Start from scratch</button>
+    </div>
+  </section>
+
+  <!-- Step 2: Details -->
+  <section id="step2" class="step-panel hidden">
+    <div class="step-header-row">
+      <button id="backBtn" class="btn-back">← Profiles</button>
+      <h2 class="step-title" id="step2Title">Ride Details</h2>
+    </div>
+
+    <form id="rideForm" novalidate>
+
+      <div class="field-group">
+        <label for="rideDate">Date <span class="required">*</span></label>
+        <input type="date" id="rideDate" required>
+        <div id="dayDisplay" class="day-display"></div>
+        <div id="dayWarning" class="day-warning hidden"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="startTime">Start Time</label>
+          <input type="text" id="startTime" placeholder="6:00 PM">
+        </div>
+        <div class="field-group">
+          <label for="finishTime">Est. Finish Time</label>
+          <input type="text" id="finishTime" placeholder="7:45 PM">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Discipline <span class="required">*</span></label>
+        <div class="chip-group" id="disciplineGroup">
+          <label class="chip"><input type="radio" name="discipline" value="Road"><span>Road</span></label>
+          <label class="chip"><input type="radio" name="discipline" value="Gravel"><span>Gravel</span></label>
+          <label class="chip"><input type="radio" name="discipline" value="CX"><span>CX</span></label>
+          <label class="chip"><input type="radio" name="discipline" value="MTB"><span>MTB</span></label>
+          <label class="chip"><input type="radio" name="discipline" value="Track"><span>Track</span></label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Culture / Group <span class="required">*</span></label>
+        <div class="chip-group" id="cultureGroup">
+          <label class="chip"><input type="checkbox" name="culture" value="G1"><span>G1 <em>Racing</em></span></label>
+          <label class="chip"><input type="checkbox" name="culture" value="G2"><span>G2 <em>Flying Dogs</em></span></label>
+          <label class="chip"><input type="checkbox" name="culture" value="G3"><span>G3 <em>Train of Pain</em></span></label>
+          <label class="chip"><input type="checkbox" name="culture" value="G4"><span>G4 <em>Intermediate</em></span></label>
+          <label class="chip"><input type="checkbox" name="culture" value="G5"><span>G5 <em>Recreational</em></span></label>
+        </div>
+        <div id="culturePreview" class="field-hint"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="distance">Distance</label>
+          <div class="input-suffix">
+            <input type="text" id="distance" placeholder="32">
+            <span class="suffix">km</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="pace">Avg Pace</label>
+          <input type="text" id="pace" placeholder="18 - 20 kph">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="location">Start Location</label>
+        <input type="text" id="location" placeholder="e.g. St Jacobs' Outlet Mall SW corner of lot">
+      </div>
+
+      <div class="field-group">
+        <label for="routeUrl">RideWithGPS Route URL</label>
+        <div class="input-with-action">
+          <input type="url" id="routeUrl" placeholder="https://ridewithgps.com/routes/…">
+          <button type="button" id="testUrlBtn" class="btn-ghost" title="Open route in new tab">↗</button>
+        </div>
+        <div class="field-hint">
+          <a href="https://ridewithgps.com/organizations/1180-waterloo-cycling-club" target="_blank" rel="noopener">Browse WCC club routes ↗</a>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="description">Description</label>
+        <textarea id="description" rows="4" placeholder="Route narrative, terrain highlights, what makes this ride unique…"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" rows="3" placeholder="Effort level, conditions, special instructions, carpool info…"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="previewBtn" class="btn-primary">Preview Post →</button>
+      </div>
+
+    </form>
+  </section>
+
+  <!-- Step 3: Preview -->
+  <section id="step3" class="step-panel hidden">
+    <div class="step-header-row">
+      <button id="editBtn" class="btn-back">← Edit</button>
+      <h2 class="step-title">Copy &amp; Post</h2>
+    </div>
+
+    <p class="step-subtitle">Copy the title and body separately into Discourse's new topic form.</p>
+
+    <div class="copy-block">
+      <div class="copy-block-header">
+        <span class="copy-label">Post Title</span>
+        <button class="btn-copy" data-target="titleOutput">Copy</button>
+      </div>
+      <div id="titleOutput" class="output-title"></div>
+    </div>
+
+    <div class="copy-block">
+      <div class="copy-block-header">
+        <span class="copy-label">Post Body</span>
+        <button class="btn-copy" data-target="bodyOutput">Copy</button>
+      </div>
+      <textarea id="bodyOutput" class="output-body" readonly></textarea>
+    </div>
+
+    <div class="form-actions form-actions--spaced">
+      <button type="button" id="restartBtn" class="btn-secondary">Start Over</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Admin Modal -->
+<div id="adminModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Admin panel">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Admin: Manage Profiles</h2>
+      <button id="closeAdmin" class="btn-ghost" aria-label="Close">✕</button>
+    </div>
+
+    <div id="adminPin">
+      <p class="pin-label">Enter admin PIN to edit profiles:</p>
+      <div class="pin-row">
+        <input type="password" id="pinInput" maxlength="8" placeholder="PIN" autocomplete="off">
+        <button id="pinSubmit" class="btn-primary">Unlock</button>
+      </div>
+      <p id="pinError" class="field-error hidden">Incorrect PIN</p>
+      <p class="field-hint" style="margin-top:0.5rem">Default PIN is 1234</p>
+    </div>
+
+    <div id="adminContent" class="hidden">
+      <div id="profileList"></div>
+      <div class="admin-actions">
+        <button id="newProfileBtn" class="btn-primary">+ New Profile</button>
+      </div>
+      <div class="admin-tools">
+        <button id="exportBtn" class="btn-secondary">Export JSON</button>
+        <label class="btn-secondary file-label">
+          Import JSON
+          <input type="file" id="importFile" accept=".json">
+        </label>
+        <button id="changePinBtn" class="btn-ghost">Change PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Editor Modal -->
+<div id="editorModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Profile editor">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="editorTitle">Edit Profile</h2>
+      <button id="closeEditor" class="btn-ghost" aria-label="Close">✕</button>
+    </div>
+    <form id="profileForm" novalidate>
+
+      <div class="field-group">
+        <label for="pName">Profile Name <span class="required">*</span></label>
+        <input type="text" id="pName" placeholder="e.g. Wednesday Gravel G5" required>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="pCategory">Category</label>
+          <input type="text" id="pCategory" placeholder="e.g. Gravel">
+        </div>
+        <div class="field-group">
+          <label for="pDiscipline">Default Discipline</label>
+          <select id="pDiscipline">
+            <option value="">— none —</option>
+            <option>Road</option>
+            <option>Gravel</option>
+            <option>CX</option>
+            <option>MTB</option>
+            <option>Track</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Default Culture(s)</label>
+        <div class="chip-group">
+          <label class="chip"><input type="checkbox" name="pCulture" value="G1"><span>G1</span></label>
+          <label class="chip"><input type="checkbox" name="pCulture" value="G2"><span>G2</span></label>
+          <label class="chip"><input type="checkbox" name="pCulture" value="G3"><span>G3</span></label>
+          <label class="chip"><input type="checkbox" name="pCulture" value="G4"><span>G4</span></label>
+          <label class="chip"><input type="checkbox" name="pCulture" value="G5"><span>G5</span></label>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="pStartTime">Default Start Time</label>
+          <input type="text" id="pStartTime" placeholder="6:00 PM">
+        </div>
+        <div class="field-group">
+          <label for="pFinishTime">Default Finish Time</label>
+          <input type="text" id="pFinishTime" placeholder="7:45 PM">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="pPace">Default Pace</label>
+        <input type="text" id="pPace" placeholder="e.g. 18 - 20 kph">
+      </div>
+
+      <div class="field-group">
+        <label for="pLocation">Default Start Location</label>
+        <input type="text" id="pLocation" placeholder="e.g. RIM Park main parking lot">
+      </div>
+
+      <div class="field-group">
+        <label for="pExpectedDay">Expected Day of Week</label>
+        <select id="pExpectedDay">
+          <option value="">— any day —</option>
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
+        <div class="field-hint">If set, a warning appears when the leader picks a different day.</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="cancelProfile" class="btn-secondary">Cancel</button>
+        <button type="submit" class="btn-primary">Save Profile</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div id="deleteModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content modal-content--sm">
+    <h2>Delete Profile?</h2>
+    <p id="deleteMessage" style="margin: 1rem 0; color: var(--text-muted)"></p>
+    <div class="form-actions">
+      <button id="cancelDelete" class="btn-secondary">Cancel</button>
+      <button id="confirmDelete" class="btn-danger">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
