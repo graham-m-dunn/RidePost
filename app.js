@@ -202,11 +202,11 @@ const BODY_TEMPLATE =
 
 {{routeUrl}}
 
-Description:
+**Description**:
 
 {{description}}
 
-Notes (optional):
+**Notes (optional)**:
 
 {{notes}}
 
@@ -220,7 +220,7 @@ Thanks & enjoy your Ride!
 * :cross_mark: Not going
 [/poll]
 
-WCC rides are open to members only. Guests are permitted provided they have an active OCA membership. All riders must follow the rules of the Highway Traffic Act and are responsible for riding in a safe manner`;
+*WCC rides are open to members only. Guests are permitted provided they have an active OCA membership. All riders must follow the rules of the Highway Traffic Act and are responsible for riding in a safe manner*`;
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
