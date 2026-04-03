@@ -435,6 +435,8 @@ function populateFormFromProfile(profile) {
 
   el('rideDate').value    = '';
   el('distance').value    = '';
+  el('distance').dataset.autofilled = '';
+  el('distanceHint').textContent = '';
   el('routeUrl').value    = '';
   el('description').value = '';
   el('notes').value       = '';
@@ -451,6 +453,8 @@ function blankForm() {
   updateCulturePreview();
   ['startTime','finishTime','pace','location','rideDate','distance','routeUrl','description','notes']
     .forEach(id => { el(id).value = ''; });
+  el('distance').dataset.autofilled = '';
+  el('distanceHint').textContent = '';
   el('dayDisplay').textContent = '';
   el('dayWarning').classList.add('hidden');
   el('step2Title').textContent = 'Ride Details';
@@ -775,6 +779,49 @@ function escHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── RideWithGPS Auto-fill ───────────────────────────────────────────────────
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+async function tryFetchRouteDistance(url) {
+  const match = url.match(/ridewithgps\.com\/routes\/(\d+)/);
+  if (!match) return;
+
+  const hint = el('distanceHint');
+  const distanceField = el('distance');
+
+  hint.textContent = 'Fetching distance from RideWithGPS…';
+
+  try {
+    const res = await fetch(`https://ridewithgps.com/routes/${match[1]}.json`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('not ok');
+    const data = await res.json();
+    const meters = data?.route?.distance;
+    if (meters > 0) {
+      const km = Math.round(meters / 100) / 10;
+      // Only overwrite if the field is empty or unchanged from last auto-fill
+      if (!distanceField.dataset.autofilled || distanceField.dataset.autofilled === distanceField.value) {
+        distanceField.value = km;
+        distanceField.dataset.autofilled = String(km);
+      }
+      hint.textContent = '✓ Distance auto-filled from route';
+      setTimeout(() => { hint.textContent = ''; }, 4000);
+    } else {
+      hint.textContent = '';
+    }
+  } catch {
+    // CORS or network error — fail silently
+    hint.textContent = '';
+  }
+}
+
+const debouncedFetchDistance = debounce(url => tryFetchRouteDistance(url), 600);
+
 // ─── Event Wiring ─────────────────────────────────────────────────────────────
 
 function setupEventListeners() {
@@ -796,6 +843,11 @@ function setupEventListeners() {
       updateCulturePreview();
     })
   );
+
+  el('routeUrl').addEventListener('input', e => {
+    const url = e.target.value.trim();
+    if (url) debouncedFetchDistance(url);
+  });
 
   el('testUrlBtn').addEventListener('click', () => {
     const url = el('routeUrl').value.trim();
